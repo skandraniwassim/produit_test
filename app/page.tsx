@@ -1,95 +1,56 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+'use client';
+import { Box, Grid, Spinner, Text, Select } from '@chakra-ui/react';
+import { useContext, useState } from 'react';
+import { ProductContext, ProductProvider } from './context/ProductContext';
+import ProductCard from './components/ProductCard';
+import { filterProducts } from './utils/filterProduct';
+import { Product } from './components/Product';
 
-export default function Home() {
+const Home: React.FC = () => {
+  const { products, loading, error } = useContext(ProductContext)!;
+  const [minRating, setMinRating] = useState(0);
+
+  if (loading) return <Spinner />;
+  if (error) return <Text color="red.500">{error}</Text>;
+
+  
+  const filteredProducts: Product[] = filterProducts(products, minRating);
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <Box>
+      <Select
+        value={minRating}
+        onChange={e => setMinRating(Number(e.target.value))}
+        placeholder="Filter by rating"
+        mb={4} 
+      >
+        <option value={0}>All</option>
+        <option value={1}>1+</option>
+        <option value={2}>2+</option>
+        <option value={3}>3+</option>
+        <option value={4}>4+</option>
+        <option value={5}>5</option>
+      </Select>
+      <Grid templateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={6}>
+        {filteredProducts.map(product => (
+          <ProductCard
+            key={product.id}
+            title={product.title}
+            description={product.description}
+            price={product.price}
+            rating={product.rating}
+            image={product.images[0]} 
+          />
+        ))}
+      </Grid>
+    </Box>
+  );
+};
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+const App: React.FC = () => (
+  <ProductProvider>
+    <Home />
+  </ProductProvider>
+);
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
-}
+export default App;
